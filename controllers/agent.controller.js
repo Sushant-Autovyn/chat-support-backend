@@ -1,6 +1,11 @@
 const Agent = require('../models/agent.model');
 
 const seedDefaultAgents = async () => {
+  const existing = await Agent.countDocuments();
+  if (existing > 0) {
+    return;
+  }
+
   const defaultAgents = [
     {
       name: 'System Administrator',
@@ -50,13 +55,8 @@ const seedDefaultAgents = async () => {
   ];
 
   try {
-    for (const agentData of defaultAgents) {
-      const existingAgent = await Agent.findOne({ email: agentData.email });
-      if (!existingAgent) {
-        await Agent.create(agentData);
-        console.log(`Seeded default agent: ${agentData.email}`);
-      }
-    }
+    await Agent.insertMany(defaultAgents);
+    console.log('Seeded default agents into MongoDB');
   } catch (error) {
     console.error('Error seeding default agents:', error);
   }
