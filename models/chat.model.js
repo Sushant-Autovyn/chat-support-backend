@@ -4,7 +4,7 @@ const chatSchema = new mongoose.Schema({
   companyId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',
-    required: true,
+    default: null,
     index: true
   },
   ticketId: {
@@ -13,30 +13,13 @@ const chatSchema = new mongoose.Schema({
     required: true,
     index: true
   },
-  sender: {
-    type: String,
-    enum: ['user', 'support'],
-    required: true
-  },
-  text: {
-    type: String,
-    default: ''
-  },
-  imageUrl: {
-    type: String,
-    default: null
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-    index: true
-  }
+  sender: { type: String, enum: ['user', 'support'], required: true },
+  text: { type: String, default: '', maxlength: 5000 },
+  imageUrl: { type: String, default: null },
+  createdAt: { type: Date, default: Date.now, index: true }
 });
 
-// Compound index for fast multi-tenant message queries
+chatSchema.index({ ticketId: 1, createdAt: 1 });
 chatSchema.index({ companyId: 1, ticketId: 1 });
-chatSchema.index({ companyId: 1, createdAt: -1 });
 
-const Chat = mongoose.model('Chat', chatSchema);
-
-module.exports = Chat;
+module.exports = mongoose.model('Chat', chatSchema);

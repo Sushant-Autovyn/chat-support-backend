@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const { getAgents, createAgent, updateAgent, deleteAgent, updateAgentPassword } = require('../controllers/agent.controller');
+const { requireAuth, requireAdmin } = require('../middleware/auth.middleware');
 
-router.get('/', getAgents);
-router.post('/', createAgent);
-router.put('/:id', updateAgent);
-router.put('/:id/password', updateAgentPassword);
-router.delete('/:id', deleteAgent);
+router.get('/', requireAuth, getAgents);
+router.post('/', requireAdmin, createAgent);
+router.put('/:id', requireAdmin, updateAgent);
+router.put('/:id/password', requireAdmin, updateAgentPassword);
+router.delete('/:id', requireAdmin, deleteAgent);
 
 module.exports = router;

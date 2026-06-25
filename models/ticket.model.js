@@ -4,29 +4,13 @@ const ticketSchema = new mongoose.Schema({
   companyId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',
-    required: true,
+    default: null,
     index: true
   },
-  name: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  email: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  phone: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  issue: {
-    type: String,
-    required: true,
-    trim: true
-  },
+  name: { type: String, required: true, trim: true, maxlength: 100 },
+  email: { type: String, required: true, trim: true, lowercase: true, maxlength: 200 },
+  phone: { type: String, required: true, trim: true, maxlength: 20 },
+  issue: { type: String, required: true, trim: true, maxlength: 2000 },
   assignedAgentId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Agent',
@@ -41,33 +25,16 @@ const ticketSchema = new mongoose.Schema({
   },
   messages: [
     {
-      sender: {
-        type: String,
-        enum: ['user', 'support'],
-        required: true
-      },
-      text: {
-        type: String,
-        required: true
-      },
-      createdAt: {
-        type: Date,
-        default: Date.now
-      }
+      sender: { type: String, enum: ['user', 'support'], required: true },
+      text: { type: String, required: true, maxlength: 5000 },
+      createdAt: { type: Date, default: Date.now }
     }
   ],
-  createdAt: {
-    type: Date,
-    default: Date.now,
-    index: true
-  }
+  createdAt: { type: Date, default: Date.now, index: true }
 });
 
-// Compound index for fast multi-tenant queries
 ticketSchema.index({ companyId: 1, status: 1 });
 ticketSchema.index({ companyId: 1, createdAt: -1 });
 ticketSchema.index({ companyId: 1, assignedAgentId: 1 });
 
-const Ticket = mongoose.model('Ticket', ticketSchema);
-
-module.exports = Ticket;
+module.exports = mongoose.model('Ticket', ticketSchema);

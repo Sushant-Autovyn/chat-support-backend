@@ -5,44 +5,22 @@ const agentSchema = new mongoose.Schema(
     companyId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Company',
-      required: true,
+      default: null,
       index: true
     },
-    name: {
-      type: String,
-      required: true,
-      trim: true
-    },
+    name: { type: String, required: true, trim: true, maxlength: 100 },
     email: {
       type: String,
       required: true,
       trim: true,
-      lowercase: true
+      lowercase: true,
+      maxlength: 200
     },
-    password: {
-      type: String,
-      required: true
-    },
-    department: {
-      type: String,
-      required: true,
-      trim: true
-    },
-    role: {
-      type: String,
-      enum: ['admin', 'agent'],
-      default: 'agent'
-    },
-    status: {
-      type: String,
-      enum: ['active', 'inactive'],
-      default: 'active',
-      index: true
-    },
-    activeChats: {
-      type: Number,
-      default: 0
-    }
+    password: { type: String, required: true },
+    department: { type: String, required: true, trim: true, maxlength: 100 },
+    role: { type: String, enum: ['admin', 'agent'], default: 'agent' },
+    status: { type: String, enum: ['active', 'inactive'], default: 'active', index: true },
+    activeChats: { type: Number, default: 0, min: 0 }
   },
   {
     timestamps: true,
@@ -58,12 +36,9 @@ const agentSchema = new mongoose.Schema(
   }
 );
 
-// Unique email per company
-agentSchema.index({ companyId: 1, email: 1 }, { unique: true });
-// Fast lookups for agents in company
+// Unique email (global — not per company since we're single-tenant for now)
+agentSchema.index({ email: 1 }, { unique: true });
 agentSchema.index({ companyId: 1, status: 1 });
 agentSchema.index({ companyId: 1, role: 1 });
 
-const Agent = mongoose.model('Agent', agentSchema);
-
-module.exports = Agent;
+module.exports = mongoose.model('Agent', agentSchema);
