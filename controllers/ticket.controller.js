@@ -1,32 +1,15 @@
 const Ticket = require('../models/ticket.model');
 
-// @desc    Create a new support ticket
-// @route   POST /api/tickets
-// @access  Public
 const createTicket = async (req, res) => {
   try {
     const { name, email, phone, issue } = req.body;
-
     if (!name || !email || !phone || !issue) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    const newTicket = new Ticket({
-      name,
-      email,
-      phone,
-      issue,
-      messages: [
-        {
-          sender: 'user',
-          text: issue
-        }
-      ]
-    });
-
+    const newTicket = new Ticket({ name, email, phone, issue, messages: [{ sender: 'user', text: issue }] });
     const savedTicket = await newTicket.save();
-    
-    // Save initial chat message in Chat collection
+
     try {
       const { createChatHelper } = require('./chat.controller');
       await createChatHelper(savedTicket._id, 'user', issue);
@@ -34,13 +17,10 @@ const createTicket = async (req, res) => {
       console.error('Failed to create initial chat message:', err);
     }
 
-    // Broadcast new ticket to support desk in real-time
     try {
       const { getIO } = require('../socket/socket');
       const io = getIO();
-      if (io) {
-        io.emit('new_ticket', savedTicket);
-      }
+      if (io) io.emit('new_ticket', savedTicket);
     } catch (err) {
       console.error('Failed to broadcast new ticket:', err);
     }
@@ -52,9 +32,6 @@ const createTicket = async (req, res) => {
   }
 };
 
-// @desc    Get all tickets
-// @route   GET /api/tickets
-// @access  Public
 const getTickets = async (req, res) => {
   try {
     const tickets = await Ticket.find().sort({ createdAt: -1 });
@@ -65,36 +42,6 @@ const getTickets = async (req, res) => {
   }
 };
 
-// @desc    Add a message to a ticket
-// @route   POST /api/tickets/:id/messages
-// @access  Public
-const addMessage = async (req, res) => {
-  try {
-    const { sender, text } = req.body;
-    const { id } = req.params;
-
-    if (!sender || !text) {
-      return res.status(400).json({ message: 'Sender and text are required' });
-    }
-
-    const ticket = await Ticket.findById(id);
-    if (!ticket) {
-      return res.status(404).json({ message: 'Ticket not found' });
-    }
-
-    ticket.messages.push({ sender, text });
-    await ticket.save();
-
-    res.json(ticket);
-  } catch (error) {
-    console.error('Error adding message:', error);
-    res.status(500).json({ message: 'Server error, failed to add message' });
-  }
-};
-
-// @desc    Update ticket status
-// @route   PUT /api/tickets/:id/status
-// @access  Public
 const updateStatus = async (req, res) => {
   try {
     const { status } = req.body;
@@ -105,9 +52,7 @@ const updateStatus = async (req, res) => {
     }
 
     const ticket = await Ticket.findById(id);
-    if (!ticket) {
-      return res.status(404).json({ message: 'Ticket not found' });
-    }
+    if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
 
     ticket.status = status;
     await ticket.save();
@@ -116,9 +61,7 @@ const updateStatus = async (req, res) => {
       try {
         const { getIO } = require('../socket/socket');
         const io = getIO();
-        if (io) {
-          io.to(id).emit('ticket_solved', { ticketId: id });
-        }
+        if (io) io.to(id).emit('ticket_solved', { ticketId: id });
       } catch (err) {
         console.error('Failed to emit ticket_solved event:', err);
       }
@@ -131,15 +74,10 @@ const updateStatus = async (req, res) => {
   }
 };
 
-// @desc    Get a single ticket by ID
-// @route   GET /api/tickets/:id
-// @access  Public
 const getTicketById = async (req, res) => {
   try {
     const ticket = await Ticket.findById(req.params.id);
-    if (!ticket) {
-      return res.status(404).json({ message: 'Ticket not found' });
-    }
+    if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
     res.json(ticket);
   } catch (error) {
     console.error('Error getting ticket by ID:', error);
@@ -147,10 +85,4 @@ const getTicketById = async (req, res) => {
   }
 };
 
-module.exports = {
-  createTicket,
-  getTickets,
-  getTicketById,
-  addMessage,
-  updateStatus
-};
+module.exports = { createTicket, getTickets, getTicketById, updateStatus };
