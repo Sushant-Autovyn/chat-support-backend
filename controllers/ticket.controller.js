@@ -3,11 +3,13 @@ const Ticket = require('../models/ticket.model');
 const createTicket = async (req, res) => {
   try {
     const { name, email, phone, issue } = req.body;
+    const companyId = req.companyId;
+
     if (!name || !email || !phone || !issue) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    const newTicket = new Ticket({ name, email, phone, issue, messages: [{ sender: 'user', text: issue }] });
+    const newTicket = new Ticket({ companyId, name, email, phone, issue, messages: [{ sender: 'user', text: issue }] });
     const savedTicket = await newTicket.save();
 
     try {
@@ -34,7 +36,8 @@ const createTicket = async (req, res) => {
 
 const getTickets = async (req, res) => {
   try {
-    const tickets = await Ticket.find().sort({ createdAt: -1 });
+    const companyId = req.companyId;
+    const tickets = await Ticket.find({ companyId }).sort({ createdAt: -1 });
     res.json(tickets);
   } catch (error) {
     console.error('Error getting tickets:', error);
@@ -46,12 +49,13 @@ const updateStatus = async (req, res) => {
   try {
     const { status } = req.body;
     const { id } = req.params;
+    const companyId = req.companyId;
 
     if (!status || !['pending', 'solved'].includes(status)) {
       return res.status(400).json({ message: 'Valid status is required' });
     }
 
-    const ticket = await Ticket.findById(id);
+    const ticket = await Ticket.findOne({ _id: id, companyId });
     if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
 
     ticket.status = status;
@@ -76,7 +80,8 @@ const updateStatus = async (req, res) => {
 
 const getTicketById = async (req, res) => {
   try {
-    const ticket = await Ticket.findById(req.params.id);
+    const companyId = req.companyId;
+    const ticket = await Ticket.findOne({ _id: req.params.id, companyId });
     if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
     res.json(ticket);
   } catch (error) {

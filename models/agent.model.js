@@ -2,6 +2,12 @@ const mongoose = require('mongoose');
 
 const agentSchema = new mongoose.Schema(
   {
+    companyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Company',
+      required: true,
+      index: true
+    },
     name: {
       type: String,
       required: true,
@@ -10,7 +16,6 @@ const agentSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
       lowercase: true
     },
@@ -31,7 +36,8 @@ const agentSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ['active', 'inactive'],
-      default: 'active'
+      default: 'active',
+      index: true
     },
     activeChats: {
       type: Number,
@@ -51,6 +57,12 @@ const agentSchema = new mongoose.Schema(
     }
   }
 );
+
+// Unique email per company
+agentSchema.index({ companyId: 1, email: 1 }, { unique: true });
+// Fast lookups for agents in company
+agentSchema.index({ companyId: 1, status: 1 });
+agentSchema.index({ companyId: 1, role: 1 });
 
 const Agent = mongoose.model('Agent', agentSchema);
 

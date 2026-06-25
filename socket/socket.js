@@ -7,18 +7,22 @@ const initSocket = (server) => {
   });
 
   io.on('connection', (socket) => {
-    socket.on('join_ticket', ({ ticketId }) => {
+    socket.on('join_company', ({ companyId }) => {
       socket.rooms.forEach((room) => {
         if (room !== socket.id) socket.leave(room);
       });
+      socket.join(companyId);
+    });
+
+    socket.on('join_ticket', ({ ticketId }) => {
       socket.join(ticketId);
     });
 
-    socket.on('send_message', async ({ ticketId, sender, text, imageUrl, agentName }) => {
+    socket.on('send_message', async ({ ticketId, sender, text, imageUrl, agentName, companyId }) => {
       try {
         const { createChatHelper } = require('../controllers/chat.controller');
-        const savedChat = await createChatHelper(ticketId, sender, text, imageUrl);
-        io.emit('receive_message', { ...savedChat.toObject(), agentName: agentName || null });
+        const savedChat = await createChatHelper(ticketId, sender, text, imageUrl, companyId);
+        io.to(companyId).emit('receive_message', { ...savedChat.toObject(), agentName: agentName || null });
       } catch (error) {
         console.error('Error handling send_message socket event:', error);
       }

@@ -1,6 +1,12 @@
 const mongoose = require('mongoose');
 
 const ticketSchema = new mongoose.Schema({
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company',
+    required: true,
+    index: true
+  },
   name: {
     type: String,
     required: true,
@@ -21,10 +27,17 @@ const ticketSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  assignedAgentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Agent',
+    default: null,
+    index: true
+  },
   status: {
     type: String,
     enum: ['pending', 'solved'],
-    default: 'pending'
+    default: 'pending',
+    index: true
   },
   messages: [
     {
@@ -45,9 +58,15 @@ const ticketSchema = new mongoose.Schema({
   ],
   createdAt: {
     type: Date,
-    default: Date.now
+    default: Date.now,
+    index: true
   }
 });
+
+// Compound index for fast multi-tenant queries
+ticketSchema.index({ companyId: 1, status: 1 });
+ticketSchema.index({ companyId: 1, createdAt: -1 });
+ticketSchema.index({ companyId: 1, assignedAgentId: 1 });
 
 const Ticket = mongoose.model('Ticket', ticketSchema);
 

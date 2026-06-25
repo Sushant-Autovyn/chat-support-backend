@@ -6,7 +6,8 @@ const Chat = require('../models/chat.model');
 const getChatsByTicketId = async (req, res) => {
   try {
     const { ticketId } = req.params;
-    const chats = await Chat.find({ ticketId }).sort({ createdAt: 1 });
+    const companyId = req.companyId;
+    const chats = await Chat.find({ companyId, ticketId }).sort({ createdAt: 1 });
     res.json(chats);
   } catch (error) {
     console.error('Error fetching chats:', error);
@@ -15,8 +16,9 @@ const getChatsByTicketId = async (req, res) => {
 };
 
 // Helper function to save chat message in database
-const createChatHelper = async (ticketId, sender, text, imageUrl = null) => {
+const createChatHelper = async (ticketId, sender, text, imageUrl = null, companyId = null) => {
   const newChat = new Chat({
+    companyId,
     ticketId,
     sender,
     text: text || '',

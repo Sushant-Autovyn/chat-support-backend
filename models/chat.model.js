@@ -1,10 +1,17 @@
 const mongoose = require('mongoose');
 
 const chatSchema = new mongoose.Schema({
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company',
+    required: true,
+    index: true
+  },
   ticketId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Ticket',
-    required: true
+    required: true,
+    index: true
   },
   sender: {
     type: String,
@@ -21,9 +28,14 @@ const chatSchema = new mongoose.Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now
+    default: Date.now,
+    index: true
   }
 });
+
+// Compound index for fast multi-tenant message queries
+chatSchema.index({ companyId: 1, ticketId: 1 });
+chatSchema.index({ companyId: 1, createdAt: -1 });
 
 const Chat = mongoose.model('Chat', chatSchema);
 
