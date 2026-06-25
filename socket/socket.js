@@ -27,7 +27,7 @@ const initSocket = (server) => {
       try {
         const { createChatHelper } = require('../controllers/chat.controller');
         const savedChat = await createChatHelper(ticketId, sender, text);
-        io.to(ticketId).emit('receive_message', savedChat);
+        io.emit('receive_message', savedChat);
       } catch (error) {
         console.error('Error handling send_message socket event:', error);
       }
