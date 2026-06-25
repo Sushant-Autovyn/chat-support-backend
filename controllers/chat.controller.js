@@ -15,11 +15,12 @@ const getChatsByTicketId = async (req, res) => {
 };
 
 // Helper function to save chat message in database
-const createChatHelper = async (ticketId, sender, text) => {
+const createChatHelper = async (ticketId, sender, text, imageUrl = null) => {
   const newChat = new Chat({
     ticketId,
     sender,
-    text
+    text: text || '',
+    imageUrl: imageUrl || null
   });
   return await newChat.save();
 };

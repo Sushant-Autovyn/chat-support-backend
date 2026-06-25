@@ -23,10 +23,10 @@ const initSocket = (server) => {
       console.log(`Socket ${socket.id} joined room ${ticketId}`);
     });
 
-    socket.on('send_message', async ({ ticketId, sender, text }) => {
+    socket.on('send_message', async ({ ticketId, sender, text, imageUrl }) => {
       try {
         const { createChatHelper } = require('../controllers/chat.controller');
-        const savedChat = await createChatHelper(ticketId, sender, text);
+        const savedChat = await createChatHelper(ticketId, sender, text, imageUrl);
         io.emit('receive_message', savedChat);
       } catch (error) {
         console.error('Error handling send_message socket event:', error);
