@@ -26,13 +26,12 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/agents", agentRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/agents", agentRoutes);
-app.use("/api/tickets", ticketRoutes);
-app.use("/api/chats", chatRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/agents', agentRoutes);
+app.use('/api/tickets', ticketRoutes);
+app.use('/api/chats', chatRoutes);
 
-server.listen(3000, () => {
-    console.log("server working on port ", 3000);
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`server working on port ${PORT}`);
 });
