@@ -66,4 +66,14 @@ describe('createChatHelper', () => {
     const chat = await createChatHelper(ticketId, 'user', 'Test', null, fakeCompanyId);
     expect(String(chat.companyId)).toBe(String(fakeCompanyId));
   });
+
+  test('✓ stores agentName for support messages', async () => {
+    const chat = await createChatHelper(ticketId, 'support', 'Hello!', null, null, 'Ravi Kumar');
+    expect(chat.agentName).toBe('Ravi Kumar');
+  });
+
+  test('✓ agentName defaults to null when not provided', async () => {
+    const chat = await createChatHelper(ticketId, 'user', 'Hi', null, null);
+    expect(chat.agentName).toBeNull();
+  });
 });

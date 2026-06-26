@@ -14,6 +14,7 @@ const chatSchema = new mongoose.Schema({
     index: true
   },
   sender: { type: String, enum: ['user', 'support'], required: true },
+  agentName: { type: String, default: null, maxlength: 100 },
   text: { type: String, default: '', maxlength: 5000 },
   imageUrl: { type: String, default: null },
   createdAt: { type: Date, default: Date.now, index: true }

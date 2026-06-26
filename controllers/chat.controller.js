@@ -16,11 +16,12 @@ const getChatsByTicketId = async (req, res) => {
   }
 };
 
-const createChatHelper = async (ticketId, sender, text, imageUrl = null, companyId = null) => {
+const createChatHelper = async (ticketId, sender, text, imageUrl = null, companyId = null, agentName = null) => {
   const newChat = new Chat({
     companyId: companyId || null,
     ticketId,
     sender,
+    agentName: agentName || null,
     text: text || '',
     imageUrl: imageUrl || null
   });

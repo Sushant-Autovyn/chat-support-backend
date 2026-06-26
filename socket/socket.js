@@ -33,8 +33,8 @@ const initSocket = (server) => {
     socket.on('send_message', async ({ ticketId, sender, text, imageUrl, agentName, companyId }) => {
       try {
         const { createChatHelper } = require('../controllers/chat.controller');
-        const savedChat = await createChatHelper(ticketId, sender, text, imageUrl, companyId || null);
-        const payload = { ...savedChat.toObject(), agentName: agentName || null };
+        const savedChat = await createChatHelper(ticketId, sender, text, imageUrl, companyId || null, agentName || null);
+        const payload = { ...savedChat.toObject(), agentName: savedChat.agentName || null };
 
         // Broadcast to: ticket room + company room + global (covers all scenarios)
         io.to(String(ticketId)).emit('receive_message', payload);
