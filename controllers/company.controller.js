@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const Company = require('../models/company.model');
 
 const createCompany = async (req, res) => {
@@ -7,7 +8,7 @@ const createCompany = async (req, res) => {
       return res.status(400).json({ message: 'Name, email, and slug are required' });
     }
 
-    const apiKey = `sk_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+    const apiKey = `sk_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
     const company = new Company({
       name,
       email,

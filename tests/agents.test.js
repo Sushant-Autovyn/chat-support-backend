@@ -169,4 +169,79 @@ describe('DELETE /api/agents/:id', () => {
 
     expect(res.status).toBe(403);
   });
+
+  test('✓ returns 404 when deleting nonexistent agent', async () => {
+    const fakeId = '000000000000000000000001';
+    const res = await request(app)
+      .delete(`/api/agents/${fakeId}`)
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(res.status).toBe(404);
+  });
+});
+
+describe('PUT /api/agents/:id — update 404 path', () => {
+  test('✓ returns 404 when updating nonexistent agent', async () => {
+    const fakeId = '000000000000000000000001';
+    const res = await request(app)
+      .put(`/api/agents/${fakeId}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ name: 'Ghost' });
+
+    expect(res.status).toBe(404);
+  });
+});
+
+describe('PUT /api/agents/:id/password — 404 path', () => {
+  test('✓ returns 404 when resetting password of nonexistent agent', async () => {
+    const fakeId = '000000000000000000000001';
+    const res = await request(app)
+      .put(`/api/agents/${fakeId}/password`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ password: 'newpassword123' });
+
+    expect(res.status).toBe(404);
+  });
+
+  test('✓ returns 400 when password is missing', async () => {
+    const agent = await Agent.findOne({ email: 'agent@test.com' });
+    const res = await request(app)
+      .put(`/api/agents/${agent._id}/password`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({});
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toMatch(/Password is required/i);
+  });
+});
+
+describe('seedDefaultAgents', () => {
+  const { seedDefaultAgents } = require('../controllers/agent.controller');
+
+  test('✓ seeds agents when collection is empty', async () => {
+    await Agent.deleteMany({});
+    await seedDefaultAgents();
+    const count = await Agent.countDocuments();
+    expect(count).toBe(5);
+  });
+
+  test('✓ does not seed again when agents already exist', async () => {
+    await seedDefaultAgents();
+    const countBefore = await Agent.countDocuments();
+    await seedDefaultAgents();
+    const countAfter = await Agent.countDocuments();
+    expect(countAfter).toBe(countBefore);
+  });
+});
+
+describe('POST /api/agents — missing fields', () => {
+  test('✓ returns 400 when required fields are missing', async () => {
+    const res = await request(app)
+      .post('/api/agents')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ name: 'Incomplete' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toMatch(/All fields are required/i);
+  });
 });
